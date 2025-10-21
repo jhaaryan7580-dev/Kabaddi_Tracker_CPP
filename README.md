@@ -187,6 +187,11 @@ Potential improvements for future versions:
 
 This project was created as part of my self-learning journey in C++ programming. After completing online tutorials covering loops, functions, and arrays, I wanted to apply these concepts to create something practical and meaningful. As someone interested in sports, creating a Kabaddi tracker allowed me to combine my passion with programming.
 
+## Use of AI Assistance
+While preparing the documentation and descriptions for this Kabaddi Tracker project, I used AI-based tools to help draft, organize, and refine the textual content. These tools assisted in improving clarity, technical explanations, and presentation.
+
+However, all the programming, project design, coding, and technical decisions are my own original work. I have reviewed and understood every part of this project and am prepared to discuss it in detail during interviews or further evaluations.
+
 ## License
 
 This project is created for educational purposes as part of a college application portfolio.
