@@ -1,14 +1,22 @@
 /*
  * KABADDI TRACKER - A C++ Console Application
- * Author: Created for Grinnell College Application Portfolio
+ * Author: Self-taught project for learning C++
  * Description: This program tracks Kabaddi match statistics including scores,
- *              raids, tackles, and player performance.
+ *              raids, and player performance.
  * 
  * Features:
  * - Track two teams with multiple players
- * - Record raid points, tackle points, and bonus points
+ * - Record raid points and bonus points
  * - Display live scores and match statistics
  * - Show player-wise performance
+ * 
+ * Current Version: 1.0
+ * Focus: Raid tracking (offensive side of Kabaddi)
+ * 
+ * Future Enhancements:
+ * - Add tackle tracking system (defensive side)
+ * - Implement ALL OUT bonus
+ * - Add file I/O for saving match data
  */
 
 #include <iostream>
@@ -24,8 +32,9 @@ struct Player {
     string name;
     int raidsAttempted;
     int successfulRaids;
-    int tacklePoints;
+    int touchPoints;        // Total touch points earned
     int bonusPoints;
+    int tacklePoints;       // Reserved for future implementation
     int totalPoints;
 };
 
@@ -42,12 +51,12 @@ void displayWelcome();
 void setupTeams(Team &team1, Team &team2);
 void displayMenu();
 void recordRaid(Team &attackingTeam, Team &defendingTeam);
-void recordTackle(Team &defendingTeam);
 void displayScores(Team team1, Team team2);
 void displayPlayerStats(Team team);
 void displayMatchSummary(Team team1, Team team2);
 void updatePlayerPoints(Player &player);
 int getValidInput(int min, int max);
+char getYesNo();
 
 // Main function
 int main() {
@@ -103,7 +112,7 @@ void displayWelcome() {
     cout << "     KABADDI MATCH TRACKER v1.0        \n";
     cout << "========================================\n";
     cout << "Track your Kabaddi match statistics!\n";
-    cout << "Record raids, tackles, and bonus points\n";
+    cout << "Record raids and bonus points\n";
     cout << "========================================\n\n";
 }
 
@@ -127,8 +136,9 @@ void setupTeams(Team &team1, Team &team2) {
         // Initialize player statistics
         team1.players[i].raidsAttempted = 0;
         team1.players[i].successfulRaids = 0;
-        team1.players[i].tacklePoints = 0;
+        team1.players[i].touchPoints = 0;
         team1.players[i].bonusPoints = 0;
+        team1.players[i].tacklePoints = 0;
         team1.players[i].totalPoints = 0;
     }
     
@@ -148,8 +158,9 @@ void setupTeams(Team &team1, Team &team2) {
         // Initialize player statistics
         team2.players[i].raidsAttempted = 0;
         team2.players[i].successfulRaids = 0;
-        team2.players[i].tacklePoints = 0;
+        team2.players[i].touchPoints = 0;
         team2.players[i].bonusPoints = 0;
+        team2.players[i].tacklePoints = 0;
         team2.players[i].totalPoints = 0;
     }
 }
@@ -171,8 +182,7 @@ void displayMenu() {
 
 // Record a raid
 void recordRaid(Team &attackingTeam, Team &defendingTeam) {
-    int playerIndex, touchPoints, bonusPoint;
-    char gotBonus;
+    int playerIndex, touches, bonusPoint;
     
     cout << "\n--- Recording Raid for " << attackingTeam.teamName << " ---\n";
     
@@ -187,24 +197,24 @@ void recordRaid(Team &attackingTeam, Team &defendingTeam) {
     // Record raid attempt
     attackingTeam.players[playerIndex].raidsAttempted++;
     
-    // Get touch points (players tagged)
+    // Get touch points (defenders tagged)
     cout << "Enter number of defenders touched (0-7): ";
-    touchPoints = getValidInput(0, 7);
+    touches = getValidInput(0, 7);
     
     // Check for bonus point
     cout << "Did the raider get a bonus point? (y/n): ";
-    cin >> gotBonus;
-    cin.ignore(); // Clear input buffer
+    char gotBonus = getYesNo();
     
-    bonusPoint = (gotBonus == 'y' || gotBonus == 'Y') ? 1 : 0;
+    bonusPoint = (gotBonus == 'y') ? 1 : 0;
     
     // Update statistics if raid was successful
-    if (touchPoints > 0 || bonusPoint > 0) {
+    if (touches > 0 || bonusPoint > 0) {
         attackingTeam.players[playerIndex].successfulRaids++;
+        attackingTeam.players[playerIndex].touchPoints += touches;
         attackingTeam.players[playerIndex].bonusPoints += bonusPoint;
         
         // Calculate total points for this raid
-        int raidPoints = touchPoints + bonusPoint;
+        int raidPoints = touches + bonusPoint;
         attackingTeam.totalScore += raidPoints;
         
         // Update player's total points
@@ -213,15 +223,17 @@ void recordRaid(Team &attackingTeam, Team &defendingTeam) {
         cout << "\nSuccessful Raid! " << attackingTeam.players[playerIndex].name 
              << " scored " << raidPoints << " point(s)!\n";
     } else {
-        cout << "\nRaid failed. Defending team gets a point!\n";
+        cout << "\nEmpty Raid! " << attackingTeam.players[playerIndex].name 
+             << " didn't score. Defending team gets a point!\n";
         defendingTeam.totalScore++;
     }
 }
 
 // Update player's total points
 void updatePlayerPoints(Player &player) {
-    player.totalPoints = (player.successfulRaids - player.bonusPoints) + 
-                         player.bonusPoints + player.tacklePoints;
+    // Calculate total points from raids only
+    // In future versions, will add tackle points here
+    player.totalPoints = player.touchPoints + player.bonusPoints;
 }
 
 // Display current scores
@@ -249,18 +261,18 @@ void displayPlayerStats(Team team) {
     cout << "\n" << left << setw(15) << "Player Name" 
          << setw(10) << "Raids" 
          << setw(12) << "Successful"
+         << setw(10) << "Touches"
          << setw(10) << "Bonus"
-         << setw(10) << "Tackles"
          << setw(10) << "Total Pts" << "\n";
-    cout << string(75, '-') << "\n";
+    cout << string(70, '-') << "\n";
     
     // Loop through all players and display their stats
     for (int i = 0; i < team.playerCount; i++) {
         cout << left << setw(15) << team.players[i].name
              << setw(10) << team.players[i].raidsAttempted
              << setw(12) << team.players[i].successfulRaids
+             << setw(10) << team.players[i].touchPoints
              << setw(10) << team.players[i].bonusPoints
-             << setw(10) << team.players[i].tacklePoints
              << setw(10) << team.players[i].totalPoints << "\n";
     }
 }
@@ -311,6 +323,26 @@ int getValidInput(int min, int max) {
         } else {
             cin.ignore(); // Clear newline from buffer
             return input;
+        }
+    }
+}
+
+// Get yes/no input
+char getYesNo() {
+    char input;
+    while (true) {
+        cin >> input;
+        cin.ignore(); // Clear buffer
+        
+        // Convert to lowercase
+        if (input >= 'A' && input <= 'Z') {
+            input = input + 32; // Convert to lowercase
+        }
+        
+        if (input == 'y' || input == 'n') {
+            return input;
+        } else {
+            cout << "Invalid input! Please enter 'y' for yes or 'n' for no: ";
         }
     }
 }
